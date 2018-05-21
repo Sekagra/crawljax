@@ -34,7 +34,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<slf4j.version>1.7.7</slf4j.version>
 		<logback.version>1.1.2</logback.version>
-		<selenium.version>[2.48.0,)</selenium.version>
+		<selenium.version>3.0.0</selenium.version>
 		<jetty.version>9.3.0.M1</jetty.version>
 		<metrics.version>3.0.2</metrics.version>
 	</properties>
@@ -157,6 +157,11 @@
 			<artifactId>mockito-core</artifactId>
 			<version>1.10.8</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
 		</dependency>
 	</dependencies>
 
