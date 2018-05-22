@@ -111,7 +111,7 @@ class ParameterInterpeter {
 
 	boolean necessaryArgsProvided() {
 		if (parameters.getArgs().length == 2) {
-			checkUrlValidity(getUrl());
+			//checkUrlValidity(getUrl());	//juqqt
 			checkOutDir(getOutputDir());
 			whenRemoteBrowserNeedsUrl();
 			return true;
