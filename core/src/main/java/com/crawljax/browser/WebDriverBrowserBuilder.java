@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 public class WebDriverBrowserBuilder implements Provider<EmbeddedBrowser> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WebDriverBrowserBuilder.class);
+	private static final Object CapabilityType = ;
 	private final CrawljaxConfiguration configuration;
 	private final Plugins plugins;
 
@@ -110,6 +111,7 @@ public class WebDriverBrowserBuilder implements Provider<EmbeddedBrowser> {
 
 		DesiredCapabilities caps = new DesiredCapabilities();
 		caps.setCapability("takesScreenshot", true);
+		caps.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
 		caps.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, new String[]{"--webdriver-loglevel=WARN"});
 		final ProxyConfiguration proxyConf = configuration
 				.getProxyConfiguration();
