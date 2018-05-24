@@ -63,6 +63,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>net.lightbody.bmp</groupId>
+			<artifactId>browsermob-core</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>com.crawljax</groupId>
 			<artifactId>crawljax-test-utils</artifactId>
 			<version>${project.version}</version>

@@ -3,12 +3,15 @@ package com.crawljax.plugins.crawloverview;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import net.lightbody.bmp.core.har.Har;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +37,9 @@ import com.google.common.collect.Maps;
 class OutPutModelCache {
 
 	private static final Logger LOG = LoggerFactory
-	        .getLogger(OutPutModelCache.class);
+			.getLogger(OutPutModelCache.class);
 	private final ConcurrentMap<String, StateBuilder> states = Maps
-	        .newConcurrentMap();
+			.newConcurrentMap();
 
 	private final AtomicInteger failedEvents = new AtomicInteger();
 
@@ -55,29 +58,41 @@ class OutPutModelCache {
 	/**
 	 * @return Makes the final calculations and retuns the {@link OutPutModel}.
 	 */
-	public OutPutModel close(CrawlSession session, ExitStatus exitStatus) {
-		ImmutableList<Edge> edgesCopy = asEdges(session.getStateFlowGraph()
-		        .getAllEdges());
+	public OutPutModel close(CrawlSession session, ExitStatus exitStatus, Map<String, Har> harList) {
+		// add an edge to represent initial ajax requests
+		Set<Eventable> realEvents = session.getStateFlowGraph().getAllEdges();
+		Eventable initialEvent = new Eventable();
+		initialEvent.setId(0);
+		initialEvent.setTarget(session.getInitialState());
+		initialEvent.setSource(session.getInitialState());
+
+		Set<Eventable> mergedEvents = new HashSet<>();
+		mergedEvents.add(initialEvent);
+		mergedEvents.addAll(realEvents);
+
+		ImmutableList<Edge> edgesCopy = asEdges(mergedEvents, harList);
 		checkEdgesAndCountFans(edgesCopy);
 		ImmutableMap<String, State> statesCopy = buildStates();
 
 		if (statesCopy.size() != session.getStateFlowGraph().getAllStates()
-		        .size()) {
+				.size()) {
 			LOG.error("Not all states from the session are in the result. This means there's a bug somewhere");
 			LOG.info(
-			        "Printing state difference. \nSession states: {} \nResult states: {}",
-			        statesCopy, session.getStateFlowGraph().getAllStates());
+					"Printing state difference. \nSession states: {} \nResult states: {}",
+					statesCopy, session.getStateFlowGraph().getAllStates());
 		}
 
 		StateStatistics stateStats = new StateStatistics(statesCopy.values());
 		return new OutPutModel(statesCopy, edgesCopy, new Statistics(session,
-		        stateStats, startDate, failedEvents.get()), exitStatus);
+				stateStats, startDate, failedEvents.get()), exitStatus);
 	}
 
-	private ImmutableList<Edge> asEdges(Set<Eventable> allEdges) {
+	private ImmutableList<Edge> asEdges(Set<Eventable> allEdges, Map<String, Har> harList) {
 		ImmutableList.Builder<Edge> builder = ImmutableList.builder();
+
 		for (Eventable eventable : allEdges) {
-			builder.add(new Edge(eventable));
+			Edge edge = new Edge(eventable, harList.get(String.valueOf(eventable.getId())));
+			builder.add(edge);
 		}
 		return builder.build();
 	}

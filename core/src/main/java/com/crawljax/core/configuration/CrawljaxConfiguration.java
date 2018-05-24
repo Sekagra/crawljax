@@ -266,6 +266,10 @@ public class CrawljaxConfiguration {
 		return plugins;
 	}
 
+	public void setProxyConfiguration(ProxyConfiguration proxy) {
+		proxyConfiguration = proxy;
+	}
+
 	public ProxyConfiguration getProxyConfiguration() {
 		return proxyConfiguration;
 	}

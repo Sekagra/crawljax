@@ -1,10 +1,14 @@
 package com.crawljax.plugins.crawloverview;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import com.crawljax.core.plugin.*;
+import net.lightbody.bmp.BrowserMobProxyServer;
+import net.lightbody.bmp.proxy.CaptureType;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriverException;
@@ -32,6 +36,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import net.lightbody.bmp.BrowserMobProxy;
+import net.lightbody.bmp.core.har.Har;
+
 /**
  * The overview is a plug-in that generates a HTML report from the crawling session which can be
  * used to inspect what is crawled by Crawljax The report contains screenshots of the visited states
@@ -39,7 +46,7 @@ import com.google.common.collect.Maps;
  * the visited states are linked together.
  **/
 public class CrawlOverview implements OnNewStatePlugin, PreStateCrawlingPlugin,
-        PostCrawlingPlugin, OnFireEventFailedPlugin, PreCrawlingPlugin {
+        PostCrawlingPlugin, OnFireEventFailedPlugin, PreCrawlingPlugin, PreFireEventPlugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CrawlOverview.class);
 
@@ -47,23 +54,32 @@ public class CrawlOverview implements OnNewStatePlugin, PreStateCrawlingPlugin,
 	private final OutPutModelCache outModelCache;
 	private OutputBuilder outputBuilder;
 	private boolean warnedForElementsInIframe = false;
+	private int eventCounter = 0;
+	private Map<String, Har> edgeHarList = new HashMap<>();
 
 	private OutPutModel result;
 
 	private HostInterface hostInterface;
+	private BrowserMobProxy proxy;
 
 	public CrawlOverview() {
-		outModelCache = new OutPutModelCache();
-		visitedStates = Maps.newConcurrentMap();
-		LOG.info("Initialized the Crawl overview plugin");
-		this.hostInterface = null;
+		this(null);
 	}
 
 	public CrawlOverview(HostInterface hostInterface) {
+		this(hostInterface, new BrowserMobProxyServer());
+		this.proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.REQUEST_HEADERS, CaptureType.RESPONSE_CONTENT);
+		this.proxy.start(8888);
+	}
+
+
+	public CrawlOverview(HostInterface hostInterface, BrowserMobProxy proxy) {
 		outModelCache = new OutPutModelCache();
 		visitedStates = Maps.newConcurrentMap();
 		LOG.info("Initialized the Crawl overview plugin");
 		this.hostInterface = hostInterface;
+		this.proxy = proxy;
+		this.proxy.newHar("0");
 	}
 
 	@Override
@@ -168,14 +184,26 @@ public class CrawlOverview implements OnNewStatePlugin, PreStateCrawlingPlugin,
 		return renderedCandidateElement;
 	}
 
+	@Override
+	public void preFireEvent(CrawlerContext context, Eventable nextEvent) {
+		this.edgeHarList.put(String.valueOf(this.eventCounter), this.proxy.getHar());
+		this.proxy.endHar();
+		this.eventCounter += 1;
+		this.proxy.newHar(String.valueOf(eventCounter));
+	}
+
 	/**
 	 * Generated the report.
 	 */
 	@Override
 	public void postCrawling(CrawlSession session, ExitStatus exitStatus) {
 		LOG.debug("postCrawling");
+
+		this.edgeHarList.put(String.valueOf(eventCounter), this.proxy.getHar());
+		this.proxy.endHar();
+
 		StateFlowGraph sfg = session.getStateFlowGraph();
-		result = outModelCache.close(session, exitStatus);
+		result = outModelCache.close(session, exitStatus, this.edgeHarList);
 		outputBuilder.write(result, session.getConfig());
 		StateWriter writer = new StateWriter(outputBuilder, sfg,
 		        ImmutableMap.copyOf(visitedStates));

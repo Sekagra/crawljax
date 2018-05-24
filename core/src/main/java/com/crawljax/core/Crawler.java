@@ -224,6 +224,9 @@ public class Crawler {
 		        && eventable.getRelatedFrame().equals("")) {
 			eventToFire = resolveByXpath(eventable, eventToFire);
 		}
+
+		plugins.runPreFireEventPlugins(context, eventToFire);
+
 		boolean isFired = false;
 		try {
 			isFired = browser.fireEventAndWait(eventToFire);

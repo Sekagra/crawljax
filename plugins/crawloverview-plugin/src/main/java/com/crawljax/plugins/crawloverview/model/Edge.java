@@ -5,16 +5,29 @@ import javax.annotation.concurrent.Immutable;
 import com.crawljax.core.CrawljaxException;
 import com.crawljax.core.state.Element;
 import com.crawljax.core.state.Eventable;
+import com.crawljax.forms.FormInput;
 import com.crawljax.plugins.crawloverview.CrawlOverviewException;
+import com.crawljax.util.DomUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+import net.lightbody.bmp.core.har.Har;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.Difference;
+import org.custommonkey.xmlunit.NodeDetail;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An {@link Edge} between two {@link State}s.
  */
 @Immutable
 public class Edge {
+
 
 	private final String from;
 	private final String to;
@@ -23,38 +36,44 @@ public class Edge {
 	private final String id;
 	private final String element;
 	private final String eventType;
+	private final CopyOnWriteArrayList<FormInput> formFields;
+	private final Har har;
 
-	public Edge(Eventable eventable) {
+	public Edge(Eventable eventable, Har har) {
 		try {
 			this.from = eventable.getSourceStateVertex().getName();
 			this.to = eventable.getTargetStateVertex().getName();
 		} catch (CrawljaxException e) {
 			throw new CrawlOverviewException("Could not get state vertex", e);
 		}
-		this.text = eventable.getElement().getText();
+		this.text = eventable.getElement() != null ? eventable.getElement().getText() : "unknown";
 		this.hash = buildHash();
-		this.id = eventable.getIdentification().toString();
+		this.id = eventable.getIdentification() != null ? eventable.getIdentification().toString() : "0";
+		this.har = har;
+		this.formFields = eventable.getRelatedFormInputs();
 		Element el = eventable.getElement();
 		if (el == null) {
 			element = "unkown";
 		} else {
 			element = eventable.getElement().toString();
 		}
-		eventType = eventable.getEventType().toString();
+		eventType = eventable.getEventType() != null ? eventable.getEventType().toString() : "unknown";
 	}
 
 	@JsonCreator
 	public Edge(@JsonProperty("from") String from, @JsonProperty("to") String to,
-	        @JsonProperty("hash") int hash, @JsonProperty("text") String text,
-	        @JsonProperty("id") String id, @JsonProperty("element") String element,
-	        @JsonProperty("eventType") String eventType) {
+				@JsonProperty("hash") int hash, @JsonProperty("text") String text,
+				@JsonProperty("id") String id, @JsonProperty("element") String element,
+				@JsonProperty("eventType") String eventType, @JsonProperty("har") Har har) {
 		this.from = from;
 		this.to = to;
 		this.hash = hash;
 		this.text = text;
 		this.id = id;
+		this.formFields = null;
 		this.element = element;
 		this.eventType = eventType;
+		this.har = har;
 	}
 
 	/**
@@ -91,6 +110,18 @@ public class Edge {
 
 	public String getElement() {
 		return element;
+	}
+
+	public Har getHar() {
+		return har;
+	}
+
+	public CopyOnWriteArrayList<FormInput> getFormFields() {
+		return formFields;
+	}
+
+	public void calculateStateDiff() {
+
 	}
 
 	@Override

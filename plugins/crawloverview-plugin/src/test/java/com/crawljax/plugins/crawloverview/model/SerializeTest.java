@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 
+import net.lightbody.bmp.core.har.Har;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -52,7 +53,7 @@ public class SerializeTest {
 		        ImmutableMap.of(state1.getName(), state1, state2.getName(), state2);
 		ImmutableList<Edge> edges =
 		        ImmutableList.of(new Edge(state1.getName(), state2.getName(), 1, "the link",
-		                "id1", "A", "click"));
+		                "id1", "A", "click", new Har()));
 		return new OutPutModel(states, edges, newStatistics(states.values()),
 		        ExitStatus.EXHAUSTED);
 	}

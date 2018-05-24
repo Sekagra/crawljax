@@ -92,7 +92,7 @@
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
-			<artifactId>gcommons-cli</artifactId>
+			<artifactId>commons-cli</artifactId>
 			<version>1.4</version>
 		</dependency>
 		<dependency>

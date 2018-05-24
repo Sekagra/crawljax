@@ -14,7 +14,6 @@ import com.crawljax.core.CandidateElement;
 import com.crawljax.core.CrawljaxException;
 import com.crawljax.forms.FormInput;
 import com.crawljax.util.XPathHelper;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
 /**
@@ -26,6 +25,7 @@ import com.google.common.base.Objects;
 public class Eventable extends DefaultEdge implements Serializable {
 	private static final long serialVersionUID = 3229708706467350994L;
 	private long id;
+	private long position;
 	private EventType eventType;
 	private Identification identification;
 	private Element element;
@@ -110,6 +110,22 @@ public class Eventable extends DefaultEdge implements Serializable {
 	 */
 	public EventType getEventType() {
 		return eventType;
+	}
+
+	/**
+	 * get current position
+	 * @return position
+     */
+	public long getPosition() {
+		return position;
+	}
+
+	/**
+	 * Set position
+	 * @param position new position
+     */
+	public void setPosition(long position) {
+		this.position = position;
 	}
 
 	/**
@@ -210,8 +226,7 @@ public class Eventable extends DefaultEdge implements Serializable {
 		return relatedFrame;
 	}
 
-	@VisibleForTesting
-	void setSource(StateVertex source) {
+	public void setSource(StateVertex source) {
 		setField("source", source);
 	}
 
@@ -226,8 +241,7 @@ public class Eventable extends DefaultEdge implements Serializable {
 		}
 	}
 
-	@VisibleForTesting
-	void setTarget(StateVertex target) {
+	public void setTarget(StateVertex target) {
 		setField("target", target);
 	}
 

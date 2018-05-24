@@ -48,7 +48,7 @@ public class Plugins {
 	                OnInvariantViolationPlugin.class, OnNewStatePlugin.class,
 	                OnRevisitStatePlugin.class, OnUrlLoadPlugin.class,
 	                PostCrawlingPlugin.class, PreStateCrawlingPlugin.class,
-	                PreCrawlingPlugin.class);
+	                PreCrawlingPlugin.class, PreFireEventPlugin.class);
 
 	private final ImmutableListMultimap<Class<? extends Plugin>, Plugin> plugins;
 
@@ -436,4 +436,23 @@ public class Plugins {
 		return names.build();
 	}
 
+	/**
+	 * Notifies all PreFireEventPlugins that nextEvent will be executed
+	 * @param context current context
+	 * @param nextEvent next event that is fired
+	 */
+	public void runPreFireEventPlugins(CrawlerContext context, Eventable nextEvent) {
+		LOGGER.debug("Running PreFireEventPlugins...");
+		counters.get(PreFireEventPlugin.class).inc();
+		for (Plugin plugin : plugins.get(PreFireEventPlugin.class)) {
+			if (plugin instanceof PreFireEventPlugin) {
+				try {
+					LOGGER.debug("Calling plugin {}", plugin);
+					((PreFireEventPlugin) plugin).preFireEvent(context, nextEvent);
+				} catch (RuntimeException e) {
+					reportFailingPlugin(plugin, e);
+				}
+			}
+		}
+	}
 }

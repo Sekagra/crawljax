@@ -13,15 +13,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import com.crawljax.core.CrawljaxException;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
+import com.crawljax.plugins.crawloverview.model.Edge;
 import com.crawljax.plugins.crawloverview.model.OutPutModel;
 import com.crawljax.plugins.crawloverview.model.Serializer;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -75,7 +78,7 @@ class OutputBuilder {
 
 	private void configureVelocity() {
 		ve.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
-		        "org.apache.velocity.runtime.log.NullLogChute");
+				"org.apache.velocity.runtime.log.NullLogChute");
 		ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
 		ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
 	}
@@ -101,7 +104,7 @@ class OutputBuilder {
 				FileUtils.copyDirectory(new File(skeleton.toURI()), outputDir);
 			} catch (IOException | URISyntaxException e) {
 				throw new CrawljaxException(
-				        "Could not copy required resources: " + e.getMessage(), e);
+						"Could not copy required resources: " + e.getMessage(), e);
 			}
 		}
 
@@ -128,7 +131,7 @@ class OutputBuilder {
 			}
 		} catch (IOException e1) {
 			throw new CrawljaxException("Could not copy required resources: " + e1.getMessage(),
-			        e1);
+					e1);
 		}
 	}
 
@@ -138,7 +141,7 @@ class OutputBuilder {
 			path = URLDecoder.decode(skeleton.getPath(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new CrawljaxException("Could not process the path of the Overview skeleton "
-			        + skeleton, e);
+					+ skeleton, e);
 		}
 		String jarpath = path.substring("file:".length(), path.indexOf("jar!") + "jar".length());
 		File jar = new File(jarpath);
@@ -168,6 +171,7 @@ class OutputBuilder {
 	private void writeIndexFile(OutPutModel model, CrawljaxConfiguration config) {
 		LOG.debug("Writing index file");
 		VelocityContext context = new VelocityContext();
+		ImmutableList<Edge> x = model.getEdges();
 		writeJsonToOutDir(Serializer.toPrettyJson(model), JSON_OUTPUT_NAME);
 		context.put("states", Serializer.toPrettyJson(model.getStates()));
 		context.put("edges", Serializer.toPrettyJson(model.getEdges()));
@@ -209,7 +213,7 @@ class OutputBuilder {
 
 	/**
 	 * Save the dom to disk.
-	 * 
+	 *
 	 * @param name
 	 *            statename
 	 * @param dom
