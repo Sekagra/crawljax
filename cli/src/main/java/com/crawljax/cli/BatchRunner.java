@@ -45,16 +45,18 @@ public class BatchRunner {
 
             CrawljaxConfiguration.CrawljaxConfigurationBuilder builder = CrawljaxConfiguration
                     .builderFor(url)
+                    .setProxyConfig(ProxyConfiguration.manualProxyOn(proxyUrl, proxyPort))
                     .setMaximumStates(maxNumberOfStates)
                     .setMaximumDepth(maxDepth)
                     .setMaximumRunTime(60, TimeUnit.MINUTES)
                     .setOutputDirectory(dstDir);
 
-            builder.addPlugin(new CrawlOverview());
+            builder.addPlugin(new CrawlOverview(proxyPort));
             builder.setBrowserConfig(new BrowserConfiguration(EmbeddedBrowser.BrowserType.CHROME)); //fixed to chrome for now
             CrawljaxConfiguration config = builder.build();
             CrawljaxRunner crawljax = new CrawljaxRunner(config);
             crawljax.call();
+
         }
     }
 
