@@ -1,9 +1,6 @@
 package com.crawljax.cli;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,12 +15,12 @@ public class BatchParameterParser {
     static final String DEPTH = "depth";
     static final String MAXSTATES = "states";
 
-    private static final String DEFAULT_URL = "http://54.93.41.96:8003/";
+    private static final String DEFAULT_URL = "http://www.4chan.org";
     private static final String DEFAULT_OUT = "out";
     private static final String DEFAULT_PROXY_URL = "localhost";
     private static final int DEFAULT_PROXY_PORT = 8888;
     private static final int DEFAULT_MAX_DEPTH = 5;
-    private static final int DEFAULT_MAX_NUMBER_STATES = 50;
+    private static final int DEFAULT_MAX_NUMBER_STATES = 20;
 
     private List<String> scanList;
 
@@ -34,7 +31,7 @@ public class BatchParameterParser {
         // parse all arguments
         this.options = getOptions();
         try {
-            this.parameters = new DefaultParser().parse(options, args);
+            this.parameters = new PosixParser().parse(options, args);
 
             // read scanlist
             if(this.parameters.hasOption(SCANLIST)) {
