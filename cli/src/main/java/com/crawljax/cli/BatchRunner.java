@@ -35,14 +35,16 @@ public class BatchRunner {
 
         for(String url : scanUrlList) {
             String domainName = "";
+            String portNumber = "";
             try {
                 domainName = new URL(url).getHost();
+                portNumber = String.valueOf(new URL(url).getPort());
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return;
             }
 
-            File dstDir = new File(outputDirectory + "/" + domainName);
+            File dstDir = new File(outputDirectory + "/" + domainName + ":" + portNumber);
             deleteFolder(dstDir, false);
 
             CrawljaxConfiguration.CrawljaxConfigurationBuilder builder = CrawljaxConfiguration
