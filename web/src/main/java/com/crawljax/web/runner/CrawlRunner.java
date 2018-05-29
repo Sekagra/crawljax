@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.crawljax.browser.EmbeddedBrowser;
+import com.crawljax.core.configuration.*;
 import com.crawljax.core.plugin.HostInterface;
 import com.crawljax.core.plugin.HostInterfaceImpl;
 import com.crawljax.core.plugin.descriptor.Parameter;
@@ -23,6 +25,8 @@ import com.crawljax.web.model.CrawlRecords;
 import com.crawljax.web.model.NameValuePair;
 import com.crawljax.web.model.Plugin;
 import com.crawljax.web.model.Plugins;
+import net.lightbody.bmp.BrowserMobProxyServer;
+import net.lightbody.bmp.proxy.CaptureType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.MDC;
 
@@ -37,12 +41,8 @@ import com.crawljax.condition.UrlCondition;
 import com.crawljax.condition.VisibleCondition;
 import com.crawljax.condition.XPathCondition;
 import com.crawljax.core.CrawljaxRunner;
-import com.crawljax.core.configuration.BrowserConfiguration;
-import com.crawljax.core.configuration.CrawlElement;
 import com.crawljax.core.configuration.CrawlRules.CrawlRulesBuilder;
-import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
-import com.crawljax.core.configuration.InputSpecification;
 import com.crawljax.core.state.Identification;
 import com.crawljax.core.state.Identification.How;
 import com.crawljax.oraclecomparator.OracleComparator;
@@ -96,13 +96,17 @@ public class CrawlRunner {
 
 	private class CrawlExecution implements Runnable {
 		private final int crawlId;
+		private final BrowserMobProxyServer proxy;
 
 		public CrawlExecution(int id) {
 			this.crawlId = id;
+			proxy = new BrowserMobProxyServer();
+			proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.REQUEST_HEADERS, CaptureType.RESPONSE_CONTENT);
 		}
 
 		@Override
 		public void run() {
+			proxy.start(8888);
 			Date timestamp = null;
 			CrawlRecord record = crawlRecords.findByID(crawlId);
 			MDC.put("crawl_record", Integer.toString(crawlId));
@@ -114,10 +118,13 @@ public class CrawlRunner {
 				LogWebSocketServlet.sendToAll("init-" + Integer.toString(crawlId));
 
 				// Build Configuration
-				CrawljaxConfigurationBuilder builder =
-				        CrawljaxConfiguration.builderFor(config.getUrl());
-				builder.setBrowserConfig(new BrowserConfiguration(config.getBrowser(), config
-				        .getNumBrowsers()));
+				CrawljaxConfiguration.CrawljaxConfigurationBuilder builder = CrawljaxConfiguration
+						.builderFor(config.getUrl())
+						.setBrowserConfig(
+								new BrowserConfiguration(EmbeddedBrowser.BrowserType.PHANTOMJS, config.getNumBrowsers()))
+						.setProxyConfig(ProxyConfiguration.manualProxyOn("localhost", 8888));
+
+
 
 				if (config.getMaxDepth() > 0)
 					builder.setMaximumDepth(config.getMaxDepth());
@@ -134,7 +141,6 @@ public class CrawlRunner {
 				else
 					builder.setUnlimitedRuntime();
 
-				builder.crawlRules().clickOnce(config.isClickOnce());
 				builder.crawlRules().insertRandomDataInInputForms(config.isRandomFormInput());
 				builder.crawlRules().waitAfterEvent(config.getEventWaitTime(),
 				        TimeUnit.MILLISECONDS);
@@ -211,7 +217,8 @@ public class CrawlRunner {
 				File outputFolder = new File(record.getOutputFolder() + File.separatorChar + "plugins"
 								+ File.separatorChar + "0");
 				outputFolder.mkdirs();
-				builder.addPlugin(new CrawlOverview(new HostInterfaceImpl(outputFolder, new HashMap<String, String>())));
+				Map<String, String> params = new HashMap<>();
+				builder.addPlugin(new CrawlOverview(new HostInterfaceImpl(outputFolder, params), this.proxy));
 				for (int i = 0, l = config.getPlugins().size(); i < l; i++) {
 					Plugin pluginConfig = config.getPlugins().get(i);
 					Plugin plugin = plugins.findByID(pluginConfig.getId());
@@ -279,6 +286,7 @@ public class CrawlRunner {
 				LogWebSocketServlet.sendToAll("fail-" + Integer.toString(crawlId));
 			} finally {
 				MDC.remove("crawl_record");
+				this.proxy.abort();
 			}
 		}
 

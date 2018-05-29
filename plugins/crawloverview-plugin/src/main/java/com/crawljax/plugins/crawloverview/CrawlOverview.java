@@ -62,18 +62,12 @@ public class CrawlOverview implements OnNewStatePlugin, PreStateCrawlingPlugin,
 	private HostInterface hostInterface;
 	private BrowserMobProxy proxy;
 
-    public CrawlOverview() {
-        this(null, 8888);
-    }
-
-	public CrawlOverview(int proxyPort) {
-		this(null, proxyPort);
+	public CrawlOverview() {
+		this(null);
 	}
 
-	public CrawlOverview(HostInterface hostInterface, int proxyPort) {
+	public CrawlOverview(HostInterface hostInterface) {
 		this(hostInterface, new BrowserMobProxyServer());
-		this.proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.REQUEST_HEADERS, CaptureType.RESPONSE_CONTENT);
-		this.proxy.start(proxyPort);
 	}
 
 
@@ -83,7 +77,6 @@ public class CrawlOverview implements OnNewStatePlugin, PreStateCrawlingPlugin,
 		LOG.info("Initialized the Crawl overview plugin");
 		this.hostInterface = hostInterface;
 		this.proxy = proxy;
-		this.proxy.newHar("0");
 	}
 
 	@Override

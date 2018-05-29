@@ -6,6 +6,8 @@ import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.ProxyConfiguration;
 import com.crawljax.plugins.crawloverview.CrawlOverview;
+import net.lightbody.bmp.BrowserMobProxyServer;
+import net.lightbody.bmp.proxy.CaptureType;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -51,12 +53,17 @@ public class BatchRunner {
                     .setMaximumRunTime(60, TimeUnit.MINUTES)
                     .setOutputDirectory(dstDir);
 
-            builder.addPlugin(new CrawlOverview(proxyPort));
+            BrowserMobProxyServer proxy = new BrowserMobProxyServer();
+            proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.REQUEST_HEADERS, CaptureType.RESPONSE_CONTENT);
+            proxy.newHar("0");
+
+            builder.addPlugin(new CrawlOverview(null, proxy));
+            proxy.start(proxyPort);
             builder.setBrowserConfig(new BrowserConfiguration(EmbeddedBrowser.BrowserType.CHROME)); //fixed to chrome for now
             CrawljaxConfiguration config = builder.build();
             CrawljaxRunner crawljax = new CrawljaxRunner(config);
             crawljax.call();
-
+            proxy.stop();
         }
     }
 
