@@ -110,10 +110,10 @@ public class CrawlActionsBuilder {
 	 * These include: All anchor tags All buttons
 	 */
 	public void clickDefaultElements() {
-		click("a");
-		click("button");
 		click("input").withAttribute("type", "submit");
 		click("input").withAttribute("type", "button");
+		click("button");
+		click("a");
 	}
 
 	private void checkNotRead() {
