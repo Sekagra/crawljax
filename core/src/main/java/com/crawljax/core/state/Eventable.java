@@ -24,6 +24,8 @@ import com.google.common.base.Objects;
  */
 public class Eventable extends DefaultEdge implements Serializable {
 	private static final long serialVersionUID = 3229708706467350994L;
+	private static long instanceCounter = 0;
+
 	private long id;
 	private long position;
 	private EventType eventType;
@@ -43,7 +45,7 @@ public class Eventable extends DefaultEdge implements Serializable {
 	 * Default constructor to support saving instances of this class as an XML.
 	 */
 	public Eventable() {
-
+		this.id = Eventable.instanceCounter++;
 	}
 
 	/**
@@ -57,6 +59,7 @@ public class Eventable extends DefaultEdge implements Serializable {
 	public Eventable(Identification identification, EventType eventType) {
 		this.identification = identification;
 		this.eventType = eventType;
+		this.id = Eventable.instanceCounter++;
 	}
 
 	/**
