@@ -8,7 +8,9 @@ import com.crawljax.core.state.Eventable;
 import com.crawljax.forms.FormInput;
 import com.crawljax.plugins.crawloverview.CrawlOverviewException;
 import com.crawljax.util.DomUtils;
+import com.crawljax.util.HarHelper;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import net.lightbody.bmp.core.har.Har;
@@ -20,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -37,6 +40,7 @@ public class Edge {
 	private final String element;
 	private final String eventType;
 	private final CopyOnWriteArrayList<FormInput> formFields;
+	private final String harId;
 	private final Har har;
 
 	public Edge(Eventable eventable, Har har) {
@@ -49,7 +53,8 @@ public class Edge {
 		this.text = eventable.getElement() != null ? eventable.getElement().getText() : "unknown";
 		this.hash = buildHash();
 		this.id = eventable.getIdentification() != null ? eventable.getIdentification().toString() : "0";
-		this.har = har;
+        this.harId = UUID.randomUUID().toString();
+        this.har = har;
 		this.formFields = eventable.getRelatedFormInputs();
 		Element el = eventable.getElement();
 		if (el == null) {
@@ -73,6 +78,7 @@ public class Edge {
 		this.formFields = null;
 		this.element = element;
 		this.eventType = eventType;
+		this.harId = UUID.randomUUID().toString();
 		this.har = har;
 	}
 
@@ -112,9 +118,12 @@ public class Edge {
 		return element;
 	}
 
+	@JsonIgnore
 	public Har getHar() {
 		return har;
 	}
+
+	public String getHarId() { return harId; }
 
 	public CopyOnWriteArrayList<FormInput> getFormFields() {
 		return formFields;

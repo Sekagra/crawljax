@@ -13,7 +13,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -27,6 +30,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import net.lightbody.bmp.core.har.Har;
+import net.lightbody.bmp.core.har.HarEntry;
 import org.apache.commons.io.FileUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -35,6 +40,7 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.Serial;
 
 class OutputBuilder {
 
@@ -161,6 +167,7 @@ class OutputBuilder {
 		try {
 			writeIndexFile(result, config);
 			writeJsonToOutDir(Serializer.toPrettyJson(config), "config.json");
+			writeHarFiles(result, config);
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 		}
@@ -233,6 +240,19 @@ class OutputBuilder {
 			return Files.toString(new File(doms, name + ".html"), Charsets.UTF_8);
 		} catch (IOException e) {
 			return "Could not load DOM: " + e.getLocalizedMessage();
+		}
+	}
+
+	void writeHarFiles(OutPutModel result, CrawljaxConfiguration config) {
+
+		new File(this.outputDir + "/har").mkdirs();
+
+		for(Edge e : result.getEdges()) {
+			try {
+				Files.write(Serializer.toPrettyJson(e.getHar()), new File(this.outputDir + "/har", e.getHarId()), Charsets.UTF_8);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
