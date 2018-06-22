@@ -19,8 +19,8 @@ public class BatchParameterParser {
     private static final String DEFAULT_OUT = "out";
     private static final String DEFAULT_PROXY_URL = "localhost";
     private static final int DEFAULT_PROXY_PORT = 8888;
-    private static final int DEFAULT_MAX_DEPTH = 5;
-    private static final int DEFAULT_MAX_NUMBER_STATES = 20;
+    private static final int DEFAULT_MAX_DEPTH = 20;
+    private static final int DEFAULT_MAX_NUMBER_STATES = 200;
 
     private List<String> scanList;
 
