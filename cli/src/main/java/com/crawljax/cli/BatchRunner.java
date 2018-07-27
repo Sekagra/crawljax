@@ -4,6 +4,7 @@ import com.crawljax.browser.EmbeddedBrowser;
 import com.crawljax.core.CrawljaxRunner;
 import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
+import com.crawljax.core.configuration.InputSpecification;
 import com.crawljax.core.configuration.ProxyConfiguration;
 import com.crawljax.plugins.crawloverview.CrawlOverview;
 import net.lightbody.bmp.BrowserMobProxyServer;
@@ -55,6 +56,14 @@ public class BatchRunner {
                     .setMaximumRunTime(60, TimeUnit.MINUTES)
                     .setOutputDirectory(dstDir);
 
+
+            // Add additonal click rules
+            builder.crawlRules().clickDefaultElements();
+            builder.crawlRules().clickElementsInRandomOrder(true);
+
+            // Add input rules like email etc
+            builder.crawlRules().setInputSpec(getCustomInputSpecification());
+
             BrowserMobProxyServer proxy = new BrowserMobProxyServer();
             proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.REQUEST_HEADERS, CaptureType.RESPONSE_CONTENT);
             proxy.newHar("0");
@@ -83,5 +92,12 @@ public class BatchRunner {
         if (deleteOwnFolderWhenFinished) {
             folder.delete();
         }
+    }
+
+    public static InputSpecification getCustomInputSpecification() {
+        InputSpecification input = new InputSpecification();
+        input.fields("mail", "email", "subscribe", "email_address", "register[personal][email]", "login-email-address", "login", "product-quantity-spin", "newsletter", "spree_user_email", "email_create", "edit-name", "login-email", "thelia_newsletter[email]", "user_login", "edit-mail", "AccountFrm_email", "register_personal_email", "newlettersubscription-email", "newlettersubscription_email").setValue("christoph.rudolf@tum.de");
+        input.fields("edit-quantity", "product_quantity", "input-quantity", "quantity_wanted", "qty", "quantity", "cart_quantity", "amount.*").setValue("1");
+        return input;
     }
 }

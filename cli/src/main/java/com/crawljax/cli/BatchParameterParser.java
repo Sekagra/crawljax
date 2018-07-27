@@ -15,7 +15,7 @@ public class BatchParameterParser {
     static final String DEPTH = "depth";
     static final String MAXSTATES = "states";
 
-    private static final String DEFAULT_URL = "http://prestashop.idp.flakebi.de";
+    private static final String DEFAULT_URL = "http://xcart.idp.flakebi.de";
     private static final String DEFAULT_OUT = "out";
     private static final String DEFAULT_PROXY_URL = "localhost";
     private static final int DEFAULT_PROXY_PORT = 8888;

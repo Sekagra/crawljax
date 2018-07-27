@@ -118,7 +118,11 @@ public class FormHandler {
             return;
         }
         WebElement inputElement = browser.getWebElement(input.getIdentification());
-        inputElement.sendKeys(text);
+
+        //If the text is already written, don't write it again
+		if(!inputElement.getAttribute("value").equals(text)) {
+			inputElement.sendKeys(text);
+		}
     }
 
 	/**
