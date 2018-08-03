@@ -97,7 +97,10 @@ public class BatchRunner {
     public static InputSpecification getCustomInputSpecification() {
         InputSpecification input = new InputSpecification();
         input.fields("mail", "email", "subscribe", "email_address", "register[personal][email]", "login-email-address", "login", "product-quantity-spin", "newsletter", "spree_user_email", "email_create", "edit-name", "login-email", "thelia_newsletter[email]", "user_login", "edit-mail", "AccountFrm_email", "register_personal_email", "newlettersubscription-email", "newlettersubscription_email").setValue("christoph.rudolf@tum.de");
-        input.fields("edit-quantity", "product_quantity", "input-quantity", "quantity_wanted", "qty", "quantity", "cart_quantity", "amount.*").setValue("1");
+        input.fields("edit-quantity", "product_quantity", "input-quantity", "quantity_wanted", "qty", "quantity", "cart_quantity", "amount.*", "quantity.*").setValue("1");
+        input.fields("postcode").setValue("10001");
+        input.fields("phone").setValue("0123456789");
+        input.fields("password", "confirmed_password").setValue("Foo1234%");
         return input;
     }
 }
